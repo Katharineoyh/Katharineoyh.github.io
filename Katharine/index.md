@@ -1,0 +1,162 @@
+---
+title       : What probably happened on Titanic
+subtitle    : MyApps-4
+author      : Katharine
+job         : Student
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Survival rate of the passengers on Titanic
+
+Carry out quick exploration of data using plotting functions in base R.
+
+- Simply looking at the probability of survival of the age group
+- A sparse pattern is observed
+- Not obvious which age group has higher or lower survival rate 
+
+---
+
+## Beyond the Survival rate
+
+Use ggplot2 to compare subset of the data at different levels of grouping variable
+
+- Adding the sex dimension, certain pattern starts to reveal
+- Understanding from the perspective of the passenger class passengers stayed in
+- Having a customise graph using facet in two dimensions, it allows uncovering of more insights
+
+---
+
+## Server.R Code (sample scripts)
+
+
+```r
+library(shiny)
+
+# Load the titanic data set from the website. Since this doesn't
+# rely on any user inputs, do this once at startup and use the value
+# throughout the lifetime of the application
+
+titanic <- read.csv("http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.csv")
+titanic$age.group <- as.integer(cut(titanic$age, 10))
+
+# calculate survival rate for different combination of class, age group, and sex
+library(plyr)
+library(ggplot2)
+td <- ddply(titanic, c("pclass", "age", "age.group", "sex"), summarise,
+            total = length(survived),
+            svv = length(survived[survived == 1]),
+            probability.survival = svv/total)
+
+
+
+## p6 + geom_point(aes(colour = pclass)) + facet_grid(sex ~ pclass)
+
+# Define server logic required to plot various variables to slice and dice further to explore the dataset.
+shinyServer(function(input, output) {
+      
+    # Generate a summary of the dataset
+    output$summary <- renderPrint({
+            summary(td)
+    })
+    
+    # Generate the scatter plot of suvival rate by age group using Base Graphics
+    output$agePlot <- renderPlot({
+        plot(probability.survival ~ age.group, 
+                data = td, main ="Probability of Survival of Different Age Group (Basic Scatter Plot)")
+
+    })
+        
+    # Generate the survival rate plot of age by drilling down using ggplot2
+    output$psPlot <- reactivePlot(function() {
+        # check for the input variable
+        if (input$variable == "pclass") {
+            # pClass
+            
+        ps <- ggplot(td, aes(x = age.group, y = probability.survival)) + 
+            geom_point(aes(colour = factor(pclass))) + 
+            ggtitle("Probability of Survival of Different Age Group - drill down (using ggplot2)") +
+            theme(legend.position = "top", legend.direction = "horizontal", 
+                  plot.title = element_text(face="bold")) +
+            scale_x_continuous("Age Group (Divided into 10 interval groups)")
+        
+        } else(
+        
+        if (input$variable == "sex") {
+            # sex
+            
+        ps <- ggplot(td, aes(x = age.group, y = probability.survival)) + 
+            geom_point(aes(colour = factor(sex))) + 
+            ggtitle("Probability of Survival of Different Age Group - drill down (using ggplot)") +
+            theme(legend.position = "top", legend.direction = "horizontal", 
+                  plot.title = element_text(face="bold")) +
+            scale_x_continuous("Age Group (Divided into 10 interval groups)")
+        }
+        
+        else {
+            # pClass and sex
+            ps <- ggplot(td, aes(x = age.group, y = probability.survival)) + 
+                geom_point(aes(colour = factor(pclass), shape = sex)) + 
+                facet_grid(sex ~ pclass) + 
+                ggtitle("Probability of Survival of Different Age Group - drill down (using ggplot2)") +
+                theme(legend.position = "top", legend.direction = "horizontal", 
+                      plot.title = element_text(face="bold")) +
+                scale_x_continuous("Age Group (Divided into 10 interval groups)")
+        })
+        
+        print(ps)
+    })
+  
+})
+```
+
+---
+
+## ui.R Code (Interactive Inputs)
+
+<!--html_preserve--><div class="container-fluid">
+<div class="row">
+<div class="col-sm-12">
+<h1>What probably happened on Titanic</h1>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-4">
+<form class="well">
+<div class="form-group shiny-input-container">
+<label class="control-label" for="variable">Choose the variable(s) to drill down to explore the survival rate of age group further:</label>
+<div>
+<select id="variable"><option value="pclass" selected>Passenger Class</option>
+<option value="sex">Sex</option>
+<option value="sex ~ pclass">Passenger Class and Sex</option></select>
+<script type="application/json" data-for="variable" data-nonempty="">{}</script>
+</div>
+</div>
+<hr/>
+<span class="help-block">
+Titanic dataset is from Department of Biostatstics of
+Vanderbilt University.
+Source:
+//biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/titanic3.csv
+</span>
+<div>
+<button type="submit" class="btn btn-primary">Update View</button>
+</div>
+</form>
+</div>
+<div class="col-sm-8">
+<div id="agePlot" class="shiny-plot-output" style="width: 100% ; height: 400px"></div>
+<div id="psPlot" class="shiny-plot-output" style="width: 100% ; height: 400px"></div>
+<h4>Summary</h4>
+<pre id="summary" class="shiny-text-output"></pre>
+</div>
+</div>
+</div><!--/html_preserve-->
+
+
+
+
