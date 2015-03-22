@@ -30,7 +30,7 @@ Use ggplot2 to compare subset of the data at different levels of grouping variab
 
 Server.R Code (sample scripts)
 ========================================================
-
+<small>
 ```{r}
 library(shiny)
 
@@ -110,9 +110,11 @@ shinyServer(function(input, output) {
   
 })
 ```
+</small>
 
 ui.R Code (sample scripts)
 ========================================================
+<small>
 
 ```{r, echo=FALSE}
 library(shiny)
@@ -128,6 +130,8 @@ shinyUI(pageWithSidebar(
                 list("Passenger Class" = "pclass", 
                      "Sex" = "sex", 
                      "Passenger Class and Sex" = "sex ~ pclass")),
+        hr(),
+        hr(),
         hr(),
         helpText("Titanic dataset is from Department of Biostatstics of",
                 "Vanderbilt University.",
@@ -152,3 +156,4 @@ shinyUI(pageWithSidebar(
 
 ```
 
+</small>

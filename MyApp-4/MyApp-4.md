@@ -30,7 +30,7 @@ Use ggplot2 to compare subset of the data at different levels of grouping variab
 
 Server.R Code (sample scripts)
 ========================================================
-
+<small>
 
 ```r
 library(shiny)
@@ -111,9 +111,11 @@ shinyServer(function(input, output) {
   
 })
 ```
+</small>
 
 ui.R Code (sample scripts)
 ========================================================
+<small>
 
 <!--html_preserve--><div class="container-fluid">
 <div class="row">
@@ -133,6 +135,8 @@ ui.R Code (sample scripts)
 <script type="application/json" data-for="variable" data-nonempty="">{}</script>
 </div>
 </div>
+<hr/>
+<hr/>
 <hr/>
 <span class="help-block">
 Titanic dataset is from Department of Biostatstics of
@@ -154,3 +158,4 @@ Source:
 </div>
 </div><!--/html_preserve-->
 
+</small>
